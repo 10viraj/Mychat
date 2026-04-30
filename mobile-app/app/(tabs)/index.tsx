@@ -1,98 +1,143 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/(tabs)/index.tsx
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useAuth } from '../../context/AuthContext';
+import { getUsers } from '../../services/api';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const AVATAR_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F06292', '#AED581', '#FFD54F'];
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
+export default function ChatListScreen() {
+    const [users, setUsers] = useState<any[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const { user } = useAuth();
+    const router = useRouter();
+
+    useFocusEffect(
+        useCallback(() => {
+            if (user) fetchUsers();
+        }, [user])
+    );
+
+    const fetchUsers = async () => {
+        try {
+            // @ts-ignore
+            const res = await getUsers(user.user.id);
+            setUsers(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchUsers();
+        setRefreshing(false);
+    };
+
+    const getAvatarColor = (name: string) => {
+        const index = name.length % AVATAR_COLORS.length;
+        return AVATAR_COLORS[index];
+    };
+
+    const formatTime = (time: string) => {
+        if (!time) return '';
+        const date = new Date(time);
+        const now = new Date();
+        if (date.toDateString() === now.toDateString()) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    };
+
+    const renderUser = ({ item }: { item: any }) => (
+        <TouchableOpacity 
+            style={styles.userItem} 
+            activeOpacity={0.7}
+            onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item._id, name: item.name } })}
+        >
+            <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.name) }]}>
+                <Text style={styles.avatarText}>{item.name[0].toUpperCase()}</Text>
+            </View>
+            <View style={styles.content}>
+                <View style={styles.header}>
+                    <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.time}>{formatTime(item.lastMessageTime)}</Text>
+                </View>
+                <View style={styles.footer}>
+                    <Text style={styles.lastMsg} numberOfLines={1}>
+                        {item.lastMessage}
+                    </Text>
+                    {item.unreadCount > 0 && (
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{item.unreadCount}</Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
+    if (!user) {
+        return (
+            <View style={styles.centered}>
+                <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
+                    <Text style={styles.loginLink}>Please Login to Chat</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <FlatList 
+                data={users}
+                keyExtractor={(item) => item._id}
+                renderItem={renderUser}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#075E54']} />
+                }
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>No chats yet. Start a conversation!</Text>
+                    </View>
+                }
             />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    container: { flex: 1, backgroundColor: '#fff' },
+    userItem: { 
+        flexDirection: 'row', 
+        paddingHorizontal: 15, 
+        paddingVertical: 12, 
+        alignItems: 'center',
+    },
+    avatar: { 
+        width: 55, 
+        height: 55, 
+        borderRadius: 27.5, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    avatarText: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
+    content: { flex: 1, marginLeft: 15, borderBottomWidth: 0.5, borderBottomColor: '#f0f0f0', paddingBottom: 12 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+    userName: { fontSize: 17, fontWeight: '700', color: '#000', flex: 1 },
+    time: { fontSize: 12, color: '#666' },
+    footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    lastMsg: { fontSize: 14, color: '#666', flex: 1, marginRight: 10 },
+    badge: { backgroundColor: '#25D366', borderRadius: 10, minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 6 },
+    badgeText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    loginLink: { color: '#075E54', fontSize: 18, fontWeight: 'bold' },
+    emptyContainer: { marginTop: 100, alignItems: 'center' },
+    emptyText: { color: '#999', fontSize: 16 }
 });

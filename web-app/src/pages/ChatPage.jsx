@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import EmojiPicker from 'emoji-picker-react';
+import { useTheme } from '../context/ThemeContext';
 
 const AVATAR_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F06292', '#AED581', '#FFD54F'];
 
 export default function ChatPage() {
     const { user, logout, setUser } = useAuth();
+    const { theme, setTheme } = useTheme();
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +44,14 @@ export default function ChatPage() {
             });
             socket.current.on('typing', (data) => {
                 if (data.sender === selectedUser?._id) setIsOtherUserTyping(data.isTyping);
+            });
+            socket.current.on('messageStatusUpdate', (data) => {
+                setMessages((prev) => prev.map(m => m._id === data.messageId ? { ...m, status: data.status } : m));
+            });
+            socket.current.on('messagesRead', (data) => {
+                if (data.readerId === selectedUser?._id) {
+                    setMessages((prev) => prev.map(m => m.sender === user.user.id ? { ...m, status: 'read' } : m));
+                }
             });
             fetchUsers();
         }
@@ -87,7 +97,11 @@ export default function ChatPage() {
     };
 
     const markAsRead = async () => {
-        try { await axios.put(`http://192.168.1.4:5000/api/messages/read/${selectedUser._id}/${user.user.id}`); fetchUsers(); } catch (err) {}
+        try { 
+            await axios.put(`http://192.168.1.4:5000/api/messages/read/${selectedUser._id}/${user.user.id}`); 
+            socket.current.emit('markAsRead', { senderId: selectedUser._id, receiverId: user.user.id });
+            fetchUsers(); 
+        } catch (err) {}
     };
 
     const handleFileUpload = async (e) => {
@@ -188,6 +202,16 @@ export default function ChatPage() {
                         {showUserMenu && (
                             <div className="dropdown-menu" ref={userMenuRef}>
                                 <div className="menu-item" onClick={() => { setShowUserMenu(false); setShowProfile(true); }}>Profile</div>
+                                <div className="menu-separator"></div>
+                                <div className="menu-item theme-item">
+                                    <span>Theme</span>
+                                    <select value={theme} onChange={(e) => setTheme(e.target.value)} onClick={(e) => e.stopPropagation()}>
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="system">Default</option>
+                                    </select>
+                                </div>
+                                <div className="menu-separator"></div>
                                 <div className="menu-item" onClick={logout}>Logout</div>
                             </div>
                         )}
@@ -243,7 +267,11 @@ export default function ChatPage() {
                                          <p>{m.text}</p>}
                                         <div className="msg-footer">
                                             <span className="time">{formatTime(m.createdAt)}</span>
-                                            {m.sender === user.user.id && <span className="checks">✓✓</span>}
+                                            {m.sender === user.user.id && (
+                                                <span className={`checks ${m.status === 'read' ? 'read' : ''}`}>
+                                                    {m.status === 'sent' ? '✓' : '✓✓'}
+                                                </span>
+                                            )}
                                         </div>
                                     </div><div ref={scrollRef}></div>
                                 </div>

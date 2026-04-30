@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ChatPage from './pages/ChatPage';
@@ -15,9 +16,10 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
+        <ThemeProvider>
+            <AuthProvider>
+                <Router>
+                    <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/" element={
@@ -28,7 +30,8 @@ function App() {
                 </Routes>
             </Router>
         </AuthProvider>
-    );
+    </ThemeProvider>
+);
 }
 
 export default App;

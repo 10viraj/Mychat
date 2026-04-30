@@ -7,30 +7,64 @@ import { useAuth } from '../context/AuthContext';
 export default function Login() {
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { identifier, password });
+            const res = await axios.post('http://192.168.1.4:5000/api/auth/login', { identifier, password });
             login(res.data);
             navigate('/');
         } catch (err) {
             alert(err.response?.data?.message || 'Login failed');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="auth-container">
-            <div className="auth-box">
-                <h2>Mychat Web</h2>
-                <form onSubmit={handleSubmit}>
-                    <input type="text" placeholder="Email or Phone Number" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required />
-                    <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    <button type="submit">Login</button>
+            <div className="auth-background-blobs">
+                <div className="blob blob-1"></div>
+                <div className="blob blob-2"></div>
+                <div className="blob blob-3"></div>
+            </div>
+            <div className="auth-box glass">
+                <div className="auth-header">
+                    <h2>Mychat</h2>
+                    <p>Welcome back! Please enter your details.</p>
+                </div>
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="input-group">
+                        <label>Email or Phone</label>
+                        <input 
+                            type="text" 
+                            placeholder="Enter your email or phone" 
+                            value={identifier} 
+                            onChange={(e) => setIdentifier(e.target.value)} 
+                            required 
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Password</label>
+                        <input 
+                            type="password" 
+                            placeholder="••••••••" 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)} 
+                            required 
+                        />
+                    </div>
+                    <button type="submit" className="auth-btn" disabled={isLoading}>
+                        {isLoading ? 'Signing in...' : 'Sign In'}
+                    </button>
                 </form>
-                <p>Don't have an account? <Link to="/register">Register</Link></p>
+                <div className="auth-footer">
+                    <p>Don't have an account? <Link to="/register">Create an account</Link></p>
+                </div>
             </div>
         </div>
     );
