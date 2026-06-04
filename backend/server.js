@@ -44,7 +44,7 @@ app.use("/api/messages", messageRoutes);
 // File Upload Route
 app.post("/api/upload", upload.single("file"), (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    const fileUrl = `http://192.168.1.4:5000/uploads/${req.file.filename}`;
+    const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
     res.json({ fileUrl, messageType: req.file.mimetype.startsWith("image/") ? "image" : "file" });
 });
 

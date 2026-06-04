@@ -15,9 +15,9 @@ export default function Register() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await axios.post('http://192.168.1.4:5000/api/auth/register', { name, email, phone, password });
+            await axios.post('http://localhost:5000/api/auth/register', { name, email, phone, password });
             alert('Registered successfully!');
-            navigate('/login');
+            navigate('/');
         } catch (err) {
             alert(err.response?.data?.message || 'Registration failed');
         } finally {
@@ -59,7 +59,7 @@ export default function Register() {
                     </button>
                 </form>
                 <div className="auth-footer">
-                    <p>Already have an account? <Link to="/login">Login here</Link></p>
+                    <p>Already have an account? <Link to="/">Login here</Link></p>
                 </div>
             </div>
         </div>

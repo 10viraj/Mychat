@@ -24,6 +24,8 @@ export default function ChatPage() {
     const [showAttachMenu, setShowAttachMenu] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const [showNewChat, setShowNewChat] = useState(false);
+    const [newChatSearch, setNewChatSearch] = useState('');
     const isResizing = useRef(false);
     const socket = useRef();
     const scrollRef = useRef();
@@ -34,13 +36,33 @@ export default function ChatPage() {
     const userMenuRef = useRef();
 
     useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    useEffect(() => {
         if (user) {
-            socket.current = io('http://192.168.1.4:5000');
+            socket.current = io('http://localhost:5000');
             socket.current.emit('join', user.user.id);
             socket.current.on('receiveMessage', (msg) => {
                 setMessages((prev) => [...prev, msg]);
                 fetchUsers();
-                new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play().catch(e => {});
+                if (msg.sender !== user.user.id) {
+                    if (selectedUser && msg.sender === selectedUser._id) {
+                        // User is currently viewing this chat, mark it as read!
+                        axios.put(`http://localhost:5000/api/messages/read/${msg.sender}/${user.user.id}`).then(() => {
+                            socket.current.emit('markAsRead', { senderId: msg.sender, receiverId: user.user.id });
+                            fetchUsers();
+                        }).catch(e => {});
+                    } else {
+                        new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play().catch(e => {});
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            const body = msg.messageType === 'text' ? msg.text : `Sent a ${msg.messageType}`;
+                            new Notification('New Message', { body });
+                        }
+                    }
+                }
             });
             socket.current.on('typing', (data) => {
                 if (data.sender === selectedUser?._id) setIsOtherUserTyping(data.isTyping);
@@ -87,18 +109,18 @@ export default function ChatPage() {
     }, [handleMouseMove]);
 
     const fetchUsers = async () => {
-        const res = await axios.get(`http://192.168.1.4:5000/api/users?currentUserId=${user.user.id}`);
-        setUsers(res.data); setFilteredUsers(res.data);
+        const res = await axios.get(`http://localhost:5000/api/users?currentUserId=${user.user.id}`);
+        setUsers(res.data);
     };
 
     const fetchMessages = async () => {
-        const res = await axios.get(`http://192.168.1.4:5000/api/messages/${user.user.id}/${selectedUser._id}`);
+        const res = await axios.get(`http://localhost:5000/api/messages/${user.user.id}/${selectedUser._id}`);
         setMessages(res.data);
     };
 
     const markAsRead = async () => {
         try { 
-            await axios.put(`http://192.168.1.4:5000/api/messages/read/${selectedUser._id}/${user.user.id}`); 
+            await axios.put(`http://localhost:5000/api/messages/read/${selectedUser._id}/${user.user.id}`); 
             socket.current.emit('markAsRead', { senderId: selectedUser._id, receiverId: user.user.id });
             fetchUsers(); 
         } catch (err) {}
@@ -110,7 +132,7 @@ export default function ChatPage() {
         setIsUploading(true); setShowAttachMenu(false);
         const formData = new FormData(); formData.append('file', file);
         try {
-            const res = await axios.post('http://192.168.1.4:5000/api/upload', formData);
+            const res = await axios.post('http://localhost:5000/api/upload', formData);
             socket.current.emit('sendMessage', {
                 sender: user.user.id, receiver: selectedUser._id,
                 messageType: res.data.messageType, fileUrl: res.data.fileUrl, text: file.name
@@ -125,15 +147,15 @@ export default function ChatPage() {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const res = await axios.post('http://192.168.1.4:5000/api/upload', formData);
-            const updateRes = await axios.post('http://192.168.1.4:5000/api/users/update-profile', {
+            const res = await axios.post('http://localhost:5000/api/upload', formData);
+            const updateRes = await axios.post('http://localhost:5000/api/users/update-profile', {
                 userId: user.user.id,
                 profilePic: res.data.fileUrl
             });
             // Update local user state
             const newUser = { ...user, user: { ...user.user, profilePic: res.data.fileUrl } };
             setUser(newUser);
-            localStorage.setItem('user', JSON.stringify(newUser));
+            sessionStorage.setItem('user', JSON.stringify(newUser));
             alert("Profile picture updated!");
         } catch (err) { alert("Update failed"); }
     };
@@ -187,6 +209,41 @@ export default function ChatPage() {
                     </div>
                 </div>
 
+                {/* New Chat Panel */}
+                <div className={`profile-panel ${showNewChat ? 'show' : ''}`}>
+                    <div className="profile-header">
+                        <button className="back-btn" onClick={() => setShowNewChat(false)}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        </button>
+                        <span>New chat</span>
+                    </div>
+                    <div className="search-bar">
+                        <div className="search-input-container">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667781" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" placeholder="Search contacts" value={newChatSearch} onChange={(e) => setNewChatSearch(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="user-list">
+                        {users.filter(u => u.name.toLowerCase().includes(newChatSearch.toLowerCase()) || (u.email && u.email.toLowerCase().includes(newChatSearch.toLowerCase()))).map(u => (
+                            <div key={u._id} className="user-item" onClick={() => { setSelectedUser(u); setShowNewChat(false); setNewChatSearch(''); }}>
+                                {u.profilePic ? (
+                                    <img src={u.profilePic} alt="user" className="avatar" />
+                                ) : (
+                                    <div className="avatar" style={{ backgroundColor: AVATAR_COLORS[u.name.length % AVATAR_COLORS.length] }}>{u.name[0]}</div>
+                                )}
+                                <div className="user-info-web">
+                                    <div className="user-header-web">
+                                        <strong>{u.name}</strong>
+                                    </div>
+                                    <div className="user-footer-web">
+                                        <small className="last-msg-web">{u.email}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="sidebar-header">
                     <div className="my-profile" onClick={() => setShowProfile(true)} style={{cursor: 'pointer'}}>
                         {user.user.profilePic ? (
@@ -224,7 +281,12 @@ export default function ChatPage() {
                     </div>
                 </div>
                 <div className="user-list">
-                    {filteredUsers.map(u => (
+                    {users.filter(u => u.lastMessageTime && u.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                        <div style={{ padding: '20px', textAlign: 'center', color: '#667781', fontSize: '14px' }}>
+                            {users.length === 0 ? 'No contacts available' : 'No chats found'}
+                        </div>
+                    )}
+                    {users.filter(u => u.lastMessageTime && u.name.toLowerCase().includes(searchQuery.toLowerCase())).map(u => (
                         <div key={u._id} className={`user-item ${selectedUser?._id === u._id ? 'active' : ''}`} onClick={() => setSelectedUser(u)}>
                             {u.profilePic ? (
                                 <img src={u.profilePic} alt="user" className="avatar" />
@@ -243,6 +305,11 @@ export default function ChatPage() {
                         </div>
                     ))}
                 </div>
+                <button className="new-chat-fab" onClick={() => setShowNewChat(true)}>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M19.005 3.175H4.674C3.642 3.175 3 3.789 3 4.821V21.02l3.544-3.514h12.461c1.033 0 2.064-1.06 2.064-2.093V4.821c-.001-1.032-1.032-1.646-2.064-1.646zm-4.989 9.869H7.041V11.1h6.975v1.944zm3-4H7.041V7.1h9.975v1.944z"/>
+                    </svg>
+                </button>
             </div>
             <div className="resizer" onMouseDown={startResizing}></div>
             <div className="main-chat">

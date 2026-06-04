@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
     avatar: { type: String, default: "" },
     profilePic: { type: String, default: "" },
     isOnline: { type: Boolean, default: false },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

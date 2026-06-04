@@ -1,0 +1,455 @@
+1. What is software ??
+-> Software is collection of programs, data structure and documentation. 
+example: WhatsApp, Chrome, MS word.
+
+2. What is good software ?
+-> A good software should have:
+   -Maintainability: Easy to modify and update
+   -Reliability(Dependability) : Works correctly without failures
+   -Efficiency: Uses minimum resources(CPU, Memory)
+   -Usability: Easy for users to operate
+   -Documentation: Proper manuals and guides
+   -Good User Interface : User-friendly design.
+
+3. What software succeeds ?
+-> Software succeeds when:
+    -Meets user requirements
+    -Works for a long time.
+    -Easy to maintain
+    -Improves business or work.
+
+4. What is software engineering ??
+-> Software engineering is the systematic approach to developing software.
+   -On Time.
+   -Within Budget
+   -Correctly working
+   -High Quality
+IEEE Definition
+   -Application of engineering principles for software development, operation and maintain.
+
+
+5. Layers of software engineering.
+-> Process:
+   Framework for software development
+   Methods:
+   Techniques for analysis, design, coding, testing
+   Tools:
+   Software that supports developments.
+
+6. Generic process activities.
+-> Communication: Required Gathering
+   Planning  :    Cost estimation and scheduling.
+   Modeling :     Analysis and design
+   Construction : Coding and Testing
+   Deployment :   Delivery, support, Feedback
+   
+
+PPT2: Software Process Models
+-----------------------------
+
+1. What is a Process Model ?
+-> A structured approach used to develop software.
+
+2. Waterfall Model.
+-> Flow :
+	-Requirement -> Design -> Coding -> Testing -> Development
+   
+   Advantages:
+        - Simple
+ 	- Easy to understand
+ 	- Good for small projects
+   Disadvantages:
+	- Difficult to change requirements
+	- Working software available late
+
+3. Prototype Model.
+-> A quick working model is built first.
+
+Process:
+	Prototype -> Feedback -> Improvement
+Advantages:
+ - Clarifies Requirements
+ - Better customer involvement
+Disadvantage:
+  -Expensive
+  -Not suitable for small projects
+
+4. Spiral Model.
+-> Combines:
+     - Waterfall 
+     - Prototyping
+     - Risk Analysis
+   Advantages:
+     - Excellent risk management
+     - Suitable for large projects
+   Disadvantages:
+     - Complex
+     - costly
+
+5. Concurrent Model
+-> Activities run simultaneously.
+ 
+   Example:
+	- design and coding  can happen together.
+   Advantages:
+	- Faster Development
+	- Continuous Feedback
+   Disadvantages:
+	- Requires strong communication.
+
+PPT-3 Agile Process Model:
+--------------------------
+
+1. What is Agile ?
+-> Agile is a modern software development approach that:
+    - Accepts changing requirement
+    - Delivers software quickly
+    - Focuses on customer satisfaction.
+
+2. Agile Principles.
+->  - Customer Collaboration
+    - Fast delivery
+    - Continuous improvement
+    - Teamwork
+    - Adaptability
+
+3. Extreme Programming(XP)
+-> XP is an Agile Methodology.
+   - XP values
+	1. Communication : Continues Interaction
+	2. Simplicity : Keep design simple
+	3. Feedback : Regular feedback from customers
+	4. Courage : Accept changes confidently
+	5. Respect : respect among team members.
+
+4. Industrial XP(IXP):
+-> Enhanced version of XP.
+
+Additional practices:
+ - Readiness assessment
+ - Project Community
+ - Project Chartering
+ - Test Driven Management
+ - Retrospectives
+ - Continues Learning.
+
+5. Scrum?
+-> Most popular agile framework
+   
+  Key Terms:
+	- Product Backlog : List of all requirements
+	- Sprint : Short development cycle(usually 2-4 weeks)
+	- Scrum Meeting   : Daily short meeting
+	- Demo		  : Show completed work to customer.
+
+Flow:
+
+Backlog -> Sprint -> Development -> Testing -> Demo -> Feedback
+
+
+Advantages of agile/scrum:
+
+->Flexible
+->Faster Delivery
+->Better Customer satisfied
+->lower cost
+->Continuous feedback
+
+Disadvantage:
+
+->Required experienced team
+->More communication needed
+->Difficult for very large teams
+
+
+
+
+IEEE : Institute of electrical and electronic engineers
+XP : Extreme Programming
+
+
+1.What is Requirement Engineering?
+->Requirement engineering is the process of understanding what the customer         needs and converting those needs into software requirements.
+
+Purpose:
+
+-Understand customer problems.
+-Define Software functionality
+-Reduce development errors
+-Create a foundation for design and coding.
+
+2. Seven Tasks of Requirements Engineering.
+->
+
+1. Inception: Understanding the problem and stockholders.
+2. Elicitation(Requirement Gathering) : Collecting requirements from customers and users.
+   Methods:
+	- Interviews
+	- Meetings
+	- Surveys
+	- Observation
+	- Use cases
+  Problem Faced:
+	- scope issues
+	- Misunderstandings
+	- Changing requirements
+3. Elaboration: Refining gathered requirements.
+   Focus on:
+	- Data requirements
+	- Functional requirement
+	- Behavioral requirement
+	- Constraints 
+4. Negotiation: Balancing customer needs with available resources.
+   Activities:
+  	- Prioritize requirements
+	- Analysis risks
+	- Estimate effort and cost
+  	- Remove unrealistic requirements
+5. Specification: Documenting requirements in a formal format
+   Documenting requirements in a formal format.
+
+usually created as:
+SRS : (software requirements specification)
+   Contains:
+     	-Functional requirements
+	-Non-functional requirements
+	-Constraints
+	-Use cases
+6. Validation: Checking whether requirements are correct.
+   Validation checks:
+	-Completeness
+	-Consistency
+	-Feasibility
+	-Testability
+	-No ambiguity
+
+7.Requirements Management: Managing requirement changing throughout the project.
+   Activities:
+	-Track Requirements
+	-Control Changes
+	-Maintain traceability
+
+3. Use case Concept:
+-> A Use Case Describes how a user interacts with the system.
+
+Components:
+-----------
+Actor: External entity interacting with the system.
+
+Examples:
+	- Customers
+	- Admin
+	- Patient
+	- External system
+
+User case: Function performed by the system.
+
+-login
+-register
+-Book Appointment
+-Place order
+
+4.QFD define.
+->Quality Function Deployment
+Types of requirements:
+
+-Normal Requirements
+-Expected Requirements
+-Exciting Requirements
+
+
+UNIT-4 CH-09
+------------
+
+1. What is software testing??
+-> Software Testing means Checking a software/application to find mistakes(bugs) 
+   before giving it to users.
+Example:
+You create an Online Shopping App.
+
+Before launching it, you check:
+
+-Login works or not
+-Payment works or not
+-Products display correctly or not
+
+This checking process is called Software Testing.
+
+2.Testing Strategies ?
+-> 
+Big Bang Testing: 
+   All modules are combined together and tested at a one time.
+Example:
+
+Login + cart + payments + orders
+-> Testing everything togethers.
+   
+Incremental Testing:
+  Modules are tested one by one.
+types:
+A. Top-down Testing
+Testing starts from the main module
+Examples:
+
+Main menu
+    |
+  Login
+    |
+  Payment  
+
+-> Main module tested first.
+
+Advantage:
+Main functionality is checked early.
+
+B. Bottom-up testing:
+   Testing starts from small modules.
+
+example:
+  payment
+  Login
+  main menu
+->Small modules tested first.
+Advantage:
+Low-level modules are verified first.
+
+
+3. White Box Testing.
+-> Testing the internal code of the program
+
+Tester can see:
+-source code
+-loops
+-Conditions
+-Functions
+
+example:
+if(age>=18){
+	console.log("eligible");
+}
+
+
+Advantage:
+->finds coding mistakes
+->Checks logic
+->Improves code quality
+Disadvantage:
+->Takes more time
+->Expensive
+->Required programming knowledge
+
+
+4. Black Box testing.
+->Testing Software without seeing the code
+
+Only check:
+-input
+-output
+
+
+example:
+
+Input
+
+Username: viraj
+Password: 1234
+ 
+output
+
+Login Successfully
+
+Advantages:
+
+->Easy to perform
+->No coding knowledge required
+->User-focused testing
+
+Disadvantage:
+
+->Cannot check internal code
+->Some hidden errors may remain
+
+
+5.Equivalence Class Partitioning (ECP)
+A technique used in Black Box Testing.
+
+Instead of testing every value, values are divided into groups.
+
+Example:
+
+Age allowed:
+
+18 - 60
+Valid Class
+18, 25, 40, 60
+Invalid Class
+10, 15, 65
+
+Test only a few values from each group.
+
+This saves time.
+
+6. Stress Testing
+-> Checks software under heavy workload.
+
+Load Testing
+Checks how software behaves when many users use it at the same time.
+
+Example:
+10,000 users opening Amazon at once.
+
+Durability Testing
+Checks software for a long period.
+
+Example:
+Banking software running continuously for 24 hours.
+
+Difference Between White Box and Black Box Testing
+White Box Testing	Black Box Testing
+Checks code	Checks functionality
+Code visible	Code hidden
+Developer performs	Tester/User performs
+Tests logic	Tests output
+Expensive	Less expensive
+
+
+
+Exam Shortcut (Most Important)
+White Box Testing
+
+👉 Tests internal code structure.
+
+Black Box Testing
+
+👉 Tests software functionality without seeing code.
+
+Top-Down Testing
+
+👉 Main module tested first.
+
+Bottom-Up Testing
+
+👉 Small modules tested first.
+
+Load Testing
+
+👉 Many users at same time.
+
+Durability Testing
+
+👉 Long-time continuous testing.
+
+Path Coverage
+
+👉 Test all possible paths.
+
+Line Coverage
+
+👉 Execute every line of code.
+
+Equivalence Class Partitioning
+
+👉 Divide inputs into valid and invalid groups.
+
+
+

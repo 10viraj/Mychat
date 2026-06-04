@@ -15,9 +15,9 @@ export default function Login() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const res = await axios.post('http://192.168.1.4:5000/api/auth/login', { identifier, password });
+            const res = await axios.post('http://localhost:5000/api/auth/login', { identifier, password });
             login(res.data);
-            navigate('/');
+            navigate('/chat');
         } catch (err) {
             alert(err.response?.data?.message || 'Login failed');
         } finally {
@@ -40,22 +40,25 @@ export default function Login() {
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="input-group">
                         <label>Email or Phone</label>
-                        <input 
-                            type="text" 
-                            placeholder="Enter your email or phone" 
-                            value={identifier} 
-                            onChange={(e) => setIdentifier(e.target.value)} 
-                            required 
+                        <input
+                            type="text"
+                            placeholder="Enter your email or phone"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
+                            required
                         />
                     </div>
                     <div className="input-group">
-                        <label>Password</label>
-                        <input 
-                            type="password" 
-                            placeholder="••••••••" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <label>Password</label>
+                            <Link to="/forgotpassword" style={{ fontSize: '0.85rem', color: 'var(--primary-color)' }}>Forgot Password?</Link>
+                        </div>
+                        <input
+                            type="password"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
                     </div>
                     <button type="submit" className="auth-btn" disabled={isLoading}>

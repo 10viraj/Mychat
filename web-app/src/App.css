@@ -269,6 +269,30 @@
     padding: 0 6px;
 }
 
+.new-chat-fab {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--wa-green);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.new-chat-fab:hover {
+    background-color: #008f6f;
+    transform: scale(1.05);
+}
+
 .main-chat {
     flex: 1;
     display: flex;
@@ -316,6 +340,14 @@
 }
 .my-msg .msg-bubble { background: var(--wa-bubble-me); border-top-right-radius: 0; }
 .their-msg .msg-bubble { background: var(--wa-bubble-them); border-top-left-radius: 0; }
+
+.chat-img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 6px;
+    display: block;
+    object-fit: cover;
+}
 
 .msg-footer { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin-top: 4px; margin-left: 20px; }
 .time { font-size: 11px; color: var(--wa-text-secondary); }

@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
             const unreadCount = await Message.countDocuments({
                 sender: u._id,
                 receiver: currentUserId,
-                isRead: false
+                status: { $ne: "read" }
             });
 
             return {
