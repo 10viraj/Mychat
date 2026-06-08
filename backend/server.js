@@ -38,11 +38,14 @@ const io = new Server(server, {
 
 const onlineUsers = new Map(); // userId -> socketId
 
+const groupRoutes = require("./routes/groupRoutes");
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/calls", callRoutes);
+app.use("/api/groups", groupRoutes);
 
 // File Upload Route
 app.post("/api/upload", upload.single("file"), (req, res) => {

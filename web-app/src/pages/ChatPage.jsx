@@ -43,6 +43,10 @@ export default function ChatPage() {
     const [showPollModal, setShowPollModal] = useState(false);
     const [pollQuestion, setPollQuestion] = useState('');
     const [pollOptions, setPollOptions] = useState(['', '']);
+    const [showNewGroup, setShowNewGroup] = useState(false);
+    const [newGroupStep, setNewGroupStep] = useState(1);
+    const [groupName, setGroupName] = useState('');
+    const [groupMembers, setGroupMembers] = useState([]);
     const [activeMessageMenu, setActiveMessageMenu] = useState(null);
     const [messageToDelete, setMessageToDelete] = useState(null);
     const isResizing = useRef(false);
@@ -409,7 +413,20 @@ export default function ChatPage() {
                         </div>
                     </div>
                     <div className="user-list">
-                        {users.filter(u => u.name.toLowerCase().includes(newChatSearch.toLowerCase()) || (u.email && u.email.toLowerCase().includes(newChatSearch.toLowerCase()))).map(u => (
+                        {!newChatSearch && (
+                            <div className="user-item" onClick={() => { setShowNewChat(false); setShowNewGroup(true); setNewGroupStep(1); }}>
+                                <div className="avatar" style={{ backgroundColor: 'var(--wa-green)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
+                                </div>
+                                <div className="user-info-web">
+                                    <div className="user-header-web">
+                                        <strong>New group</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div style={{ padding: '15px 20px', color: 'var(--wa-green)', textTransform: 'uppercase', fontSize: '13px', letterSpacing: '0.5px', background: 'var(--wa-sidebar)', position: 'sticky', top: 0, zIndex: 1 }}>Contacts on MyChat</div>
+                        {users.filter(u => !u.isGroup && (u.name.toLowerCase().includes(newChatSearch.toLowerCase()) || (u.email && u.email.toLowerCase().includes(newChatSearch.toLowerCase())))).map(u => (
                             <div key={u._id} className="user-item" onClick={() => { setSelectedUser(u); setShowNewChat(false); setNewChatSearch(''); }}>
                                 {u.profilePic ? (
                                     <img src={u.profilePic} alt="user" className="avatar" />
@@ -427,6 +444,81 @@ export default function ChatPage() {
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* New Group Panel */}
+                <div className={`profile-panel ${showNewGroup ? 'show' : ''}`}>
+                    <div className="profile-header">
+                        <button className="back-btn" onClick={() => {
+                            if (newGroupStep === 2) setNewGroupStep(1);
+                            else setShowNewGroup(false);
+                        }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+                        </button>
+                        <span>{newGroupStep === 1 ? 'Add group participants' : 'New group'}</span>
+                    </div>
+                    {newGroupStep === 1 ? (
+                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)' }}>
+                            <div className="user-list" style={{ flex: 1, overflowY: 'auto', margin: '0 -20px' }}>
+                                {users.filter(u => !u.isGroup && u._id !== user.user.id).map(u => (
+                                    <div key={u._id} className="user-item" onClick={() => {
+                                        if (groupMembers.includes(u._id)) {
+                                            setGroupMembers(groupMembers.filter(id => id !== u._id));
+                                        } else {
+                                            setGroupMembers([...groupMembers, u._id]);
+                                        }
+                                    }}>
+                                        <div className="avatar" style={{ position: 'relative' }}>
+                                            {u.profilePic ? <img src={u.profilePic} alt="user" className="avatar" /> : <div className="avatar" style={{ backgroundColor: AVATAR_COLORS[u.name.length % AVATAR_COLORS.length] }}>{u.name[0]}</div>}
+                                            {groupMembers.includes(u._id) && (
+                                                <div style={{ position: 'absolute', bottom: -2, right: -2, background: 'var(--wa-green)', borderRadius: '50%', width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--wa-sidebar)' }}>
+                                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#fff"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /></svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="user-info-web">
+                                            <div className="user-header-web">
+                                                <strong>{u.name}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {groupMembers.length > 0 && (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 0' }}>
+                                    <button onClick={() => setNewGroupStep(2)} style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--wa-green)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+                                        <svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" /></svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px', marginTop: '20px' }}>
+                                <div style={{ width: '200px', height: '200px', borderRadius: '50%', backgroundColor: 'var(--wa-input-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <svg viewBox="0 0 24 24" width="80" height="80" fill="var(--wa-text-secondary)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
+                                </div>
+                            </div>
+                            <input type="text" placeholder="Group Subject" value={groupName} onChange={e => setGroupName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '20px', background: 'transparent', color: 'var(--wa-text-primary)', border: 'none', borderBottom: '2px solid var(--wa-green)', fontSize: '15px', outline: 'none', textAlign: 'center' }} autoFocus />
+                            <div style={{ flex: 1 }}></div>
+                            {groupName.trim() && (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 0' }}>
+                                    <button onClick={async () => {
+                                        try {
+                                            await axios.post('http://localhost:5000/api/groups/create', { name: groupName, members: groupMembers, admin: user.user.id });
+                                            setShowNewGroup(false);
+                                            setNewGroupStep(1);
+                                            setGroupName('');
+                                            setGroupMembers([]);
+                                            fetchUsers();
+                                        } catch (e) { alert('Failed to create group'); }
+                                    }} style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--wa-green)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+                                        <svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /></svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Settings Panel */}
@@ -529,6 +621,7 @@ export default function ChatPage() {
                         {showUserMenu && (
                             <div className="dropdown-menu" ref={userMenuRef}>
                                 <div className="menu-item" onClick={() => { setShowUserMenu(false); setShowProfile(true); }}>Profile</div>
+                                <div className="menu-item" onClick={() => { setShowUserMenu(false); setShowNewGroup(true); setNewGroupStep(1); }}>New group</div>
                                 <div className="menu-item" onClick={() => { setShowUserMenu(false); setShowSettings(true); }}>Settings</div>
                                 <div className="menu-item" onClick={() => { setShowUserMenu(false); setShowCalls(true); }}>Call Logs</div>
                                 <div className="menu-separator"></div>
@@ -544,12 +637,18 @@ export default function ChatPage() {
                     </div>
                 </div>
                 <div className="user-list">
-                    {users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                        <div style={{ padding: '20px', textAlign: 'center', color: '#667781', fontSize: '14px' }}>
-                            {users.length === 0 ? 'No contacts available' : 'No chats found'}
-                        </div>
-                    )}
-                    {users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map(u => (
+                    {users.filter(u =>
+                        (u.lastMessage !== 'Tap to chat' || u.isGroup || u._id === selectedUser?._id) &&
+                        u.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).length === 0 && (
+                            <div style={{ padding: '20px', textAlign: 'center', color: '#667781', fontSize: '14px' }}>
+                                {users.length === 0 ? 'No contacts available' : 'No chats found'}
+                            </div>
+                        )}
+                    {users.filter(u =>
+                        (u.lastMessage !== 'Tap to chat' || u.isGroup || u._id === selectedUser?._id) &&
+                        u.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).map(u => (
                         <div key={u._id} className={`user-item ${selectedUser?._id === u._id ? 'active' : ''}`} onClick={() => setSelectedUser(u)}>
                             {u.profilePic ? (
                                 <img src={u.profilePic} alt="user" className="avatar" />
@@ -769,7 +868,15 @@ export default function ChatPage() {
                                 )}
                                 <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
                                 <input type="text" placeholder="Type a message" value={text} onChange={(e) => setText(e.target.value)} onFocus={() => { setShowEmojiPicker(false); setShowAttachMenu(false); }} />
-                                <button type="submit" style={{ display: 'none' }}></button>
+                                {text.trim() ? (
+                                    <button type="submit" className="action-btn send-btn" style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--wa-text-secondary)"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                                    </button>
+                                ) : (
+                                    <button type="button" className="action-btn mic-btn" style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => alert('Voice messages coming soon!')}>
+                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--wa-text-secondary)"><path d="M11.999 14.942c2.001 0 3.531-1.53 3.531-3.531V4.35c0-2.001-1.53-3.531-3.531-3.531S8.469 2.349 8.469 4.35v7.061c0 2.001 1.53 3.53 3.53 3.531zm6.238-3.53c0 3.531-2.942 6.002-6.237 6.002s-6.237-2.471-6.237-6.002H3.761c0 4.001 3.178 7.297 7.061 7.885v3.884h2.354v-3.884c3.884-.588 7.061-3.884 7.061-7.885h-2z" /></svg>
+                                    </button>
+                                )}
                             </form>
                         )}
                     </>
