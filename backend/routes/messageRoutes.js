@@ -33,4 +33,30 @@ router.put("/read/:senderId/:receiverId", async (req, res) => {
     }
 });
 
+// Clear chat between two users
+router.delete("/clear/:userId1/:userId2", async (req, res) => {
+    try {
+        const { userId1, userId2 } = req.params;
+        await Message.deleteMany({
+            $or: [
+                { sender: userId1, receiver: userId2 },
+                { sender: userId2, receiver: userId1 }
+            ]
+        });
+        res.json({ message: "Chat cleared successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete a specific message
+router.delete("/:messageId", async (req, res) => {
+    try {
+        await Message.findByIdAndDelete(req.params.messageId);
+        res.json({ message: "Message deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

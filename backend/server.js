@@ -10,6 +10,8 @@ const Message = require("./models/Message");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const callRoutes = require("./routes/callRoutes");
+const Call = require("./models/Call");
 
 const app = express();
 
@@ -40,6 +42,7 @@ const onlineUsers = new Map(); // userId -> socketId
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/calls", callRoutes);
 
 // File Upload Route
 app.post("/api/upload", upload.single("file"), (req, res) => {
@@ -70,7 +73,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("sendMessage", async (data) => {
-        const { sender, receiver, text, messageType, fileUrl } = data;
+        const { sender, receiver, text, messageType, fileUrl, contactData, pollData, locationData } = data;
         
         const isReceiverOnline = onlineUsers.has(receiver);
         const status = isReceiverOnline ? "delivered" : "sent";
@@ -82,6 +85,9 @@ io.on("connection", (socket) => {
             text, 
             messageType: messageType || "text", 
             fileUrl,
+            contactData,
+            pollData,
+            locationData,
             status
         });
         
@@ -98,6 +104,34 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on("votePoll", async (data) => {
+        const { messageId, optionIndex, userId } = data;
+        try {
+            const message = await Message.findById(messageId);
+            if (message && message.messageType === 'poll') {
+                const option = message.pollData.options[optionIndex];
+                
+                if (!message.pollData.multipleAnswers) {
+                    message.pollData.options.forEach(opt => {
+                        opt.votes = opt.votes.filter(id => id.toString() !== userId);
+                    });
+                }
+
+                const hasVoted = option.votes.some(id => id.toString() === userId);
+                if (hasVoted) {
+                    option.votes = option.votes.filter(id => id.toString() !== userId);
+                } else {
+                    option.votes.push(userId);
+                }
+
+                await message.save();
+                io.to(message.sender.toString()).to(message.receiver.toString()).emit("pollUpdated", message);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
     socket.on("markAsRead", async ({ senderId, receiverId }) => {
         await Message.updateMany(
             { sender: senderId, receiver: receiverId, status: { $ne: "read" } },
@@ -110,6 +144,48 @@ io.on("connection", (socket) => {
     socket.on("typing", (data) => {
         const { sender, receiver, isTyping } = data;
         io.to(receiver).emit("typing", { sender, isTyping });
+    });
+
+    socket.on("messageDeleted", (data) => {
+        const { messageId, type, receiverId } = data;
+        if (type === 'everyone' && receiverId) {
+            io.to(receiverId).emit("messageDeleted", { messageId, type });
+        }
+    });
+
+    // WebRTC Calling Signaling
+    socket.on("callUser", async (data) => {
+        const { userToCall, signalData, from, name, callType } = data;
+        
+        try {
+            const newCall = await Call.create({
+                caller: from,
+                receiver: userToCall,
+                callType: callType || "video",
+                status: "missed"
+            });
+            io.to(userToCall).emit("callUser", { signal: signalData, from, name, callType, callId: newCall._id });
+        } catch (err) {
+            console.error("Error creating call record:", err);
+        }
+    });
+
+    socket.on("answerCall", async (data) => {
+        try {
+            await Call.findByIdAndUpdate(data.callId, { status: "completed" });
+            io.to(data.to).emit("callAccepted", data.signal);
+        } catch (err) {
+            console.error("Error updating call:", err);
+        }
+    });
+
+    socket.on("endCall", async (data) => {
+        if (data.callId) {
+            try {
+                await Call.findByIdAndUpdate(data.callId, { endTime: Date.now() });
+            } catch(e) {}
+        }
+        io.to(data.to).emit("callEnded");
     });
 
     socket.on("disconnect", () => {

@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     avatar: { type: String, default: "" },
     profilePic: { type: String, default: "" },
     isOnline: { type: Boolean, default: false },
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     resetPasswordToken: String,
     resetPasswordExpire: Date,
 }, { timestamps: true });

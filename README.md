@@ -12,6 +12,7 @@ A full-stack, real-time chat application featuring a robust Node.js/Express back
 - **Media Support**: Image uploading and sharing.
 - **Rich UI**: Interactive components, emoji picker, and premium design.
 - **Global Search**: Find users and start conversations instantly.
+- **Settings Panel**: Customize themes, chat wallpapers, and toggle desktop notifications.
 
 ---
 

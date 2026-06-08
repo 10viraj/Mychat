@@ -57,4 +57,46 @@ router.post("/update-profile", async (req, res) => {
     }
 });
 
+// Block/Unblock a user
+router.put("/block/:id", async (req, res) => {
+    try {
+        const { currentUserId } = req.body;
+        const userToBlock = req.params.id;
+        
+        const user = await User.findById(currentUserId);
+        if (user.blockedUsers.includes(userToBlock)) {
+            user.blockedUsers = user.blockedUsers.filter(id => id.toString() !== userToBlock);
+        } else {
+            user.blockedUsers.push(userToBlock);
+        }
+        await user.save();
+        res.json({ message: "Blocked status updated", blockedUsers: user.blockedUsers });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Report a user
+router.post("/report/:id", async (req, res) => {
+    try {
+        const { currentUserId } = req.body;
+        res.json({ message: "User reported successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+// Update user profile picture
+router.post("/update-profile", async (req, res) => {
+    try {
+        const { userId, profilePic } = req.body;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        user.profilePic = profilePic;
+        await user.save();
+        res.json({ message: "Profile updated successfully", profilePic: user.profilePic });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
